@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+
+{% block title %}Report Waste - EcoTracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-camera me-2"></i>Report Waste
+                    </h3>
+                    <p class="mb-0">Upload a photo and help us track waste in your area</p>
+                </div>
+                
+                <div class="card-body">
+                    <form id="reportForm" enctype="multipart/form-data">
+                        <!-- Image Upload Section -->
+                        <div class="mb-4">
+                            <label for="wasteImage" class="form-label">
+                                <i class="fas fa-image me-2"></i>Upload Waste Photo
+                            </label>
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <p class="mb-2">Click to upload or drag and drop</p>
+                                    <p class="text-muted small">PNG, JPG, JPEG, GIF up to 10MB</p>
+                                </div>
+                                <input type="file" id="wasteImage" name="file" accept="image/*" class="d-none" required>
+                            </div>
+                            <div id="imagePreview" class="mt-3 d-none">
+                                <img id="previewImg" class="img-fluid rounded" style="max-height: 300px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImage">
+                                    <i class="fas fa-trash me-1"></i>Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Location Section -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Location
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="number" class="form-control" id="latitude" placeholder="Latitude" step="any" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="number" class="form-control" id="longitude" placeholder="Longitude" step="any" readonly>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-outline-success btn-sm" id="getLocation">
+                                    <i class="fas fa-location-arrow me-1"></i>Get Current Location
+                                </button>
+                                <span id="locationStatus" class="ms-2 small text-muted"></span>
+                            </div>
+                        </div>
+
+                        <!-- AI Detection Results -->
+                        <div class="mb-4 d-none" id="detectionResults">
+                            <label class="form-label">
+                                <i class="fas fa-robot me-2"></i>AI Detection Results
+                            </label>
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-search me-2"></i>
+                                    <span id="detectedObject">Detecting objects...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recycling Info -->
+                        <div class="mb-4 d-none" id="recyclingInfo">
+                            <label class="form-label">
+                                <i class="fas fa-recycle me-2"></i>How to Recycle
+                            </label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 id="recyclingTitle"></h6>
+                                    <p id="recyclingDescription"></p>
+                                    <div id="recyclingSteps"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                                <i class="fas fa-paper-plane me-2"></i>Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Points Info -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h5 class="text-success">
+                        <i class="fas fa-coins me-2"></i>Earn 10 Points!
+                    </h5>
+                    <p class="mb-0">You'll receive 10 points for each waste report you submit.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentLocation = null;
+let uploadedImageUrl = null;
+
+// File upload handling
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('wasteImage');
+const imagePreview = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
+const removeImageBtn = document.getElementById('removeImage');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', handleDragOver);
+uploadArea.addEventListener('drop', handleDrop);
+
+fileInput.addEventListener('change', handleFileSelect);
+
+function handleDragOver(e) {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFile(files[0]);
+    }
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        handleFile(file);
+    }
+}
+
+function handleFile(file) {
+    if (!file.type.startsWith('image/')) {
+        showAlert('Please select an image file.', 'danger');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        showAlert('File size must be less than 10MB.', 'danger');
+        return;
+    }
+    
+    // Upload file
+    uploadFile(file);
+}
+
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            uploadedImageUrl = result.url;
+            showImagePreview(file);
+            checkFormValidity();
+        } else {
+            showAlert(result.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error uploading file. Please try again.', 'danger');
+    }
+}
+
+function showImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        imagePreview.classList.remove('d-none');
+        uploadArea.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+removeImageBtn.addEventListener('click', () => {
+    imagePreview.classList.add('d-none');
+    uploadArea.style.display = 'block';
+    fileInput.value = '';
+    uploadedImageUrl = null;
+    checkFormValidity();
+});
+
+// Geolocation handling
+const getLocationBtn = document.getElementById('getLocation');
+const locationStatus = document.getElementById('locationStatus');
+
+getLocationBtn.addEventListener('click', getCurrentLocation);
+
+function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        showAlert('Geolocation is not supported by this browser.', 'danger');
+        return;
+    }
+    
+    locationStatus.textContent = 'Getting location...';
+    getLocationBtn.disabled = true;
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            
+            document.getElementById('latitude').value = currentLocation.lat.toFixed(6);
+            document.getElementById('longitude').value = currentLocation.lng.toFixed(6);
+            
+            locationStatus.textContent = 'Location obtained!';
+            locationStatus.className = 'ms-2 small text-success';
+            getLocationBtn.disabled = false;
+            checkFormValidity();
+        },
+        (error) => {
+            let message = 'Error getting location: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message += 'Permission denied.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message += 'Position unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message += 'Request timeout.';
+                    break;
+                default:
+                    message += 'Unknown error.';
+                    break;
+            }
+            showAlert(message, 'danger');
+            locationStatus.textContent = 'Location failed';
+            locationStatus.className = 'ms-2 small text-danger';
+            getLocationBtn.disabled = false;
+        }
+    );
+}
+
+// Form submission
+document.getElementById('reportForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!uploadedImageUrl || !currentLocation) {
+        showAlert('Please upload an image and get your location.', 'danger');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    try {
+        const response = await fetch('/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                image_url: uploadedImageUrl,
+                lat: currentLocation.lat,
+                lng: currentLocation.lng
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show detection results
+            document.getElementById('detectedObject').textContent = `Detected: ${result.detected_object}`;
+            document.getElementById('detectionResults').classList.remove('d-none');
+            
+            // Show recycling info
+            showRecyclingInfo(result.detected_object);
+            
+            showAlert(`Report submitted successfully! You earned ${result.points_awarded} points.`, 'success');
+            
+            // Update user points in navbar
+            const userPoints = document.getElementById('user-points');
+            if (userPoints) {
+                const currentPoints = parseInt(userPoints.textContent);
+                userPoints.textContent = currentPoints + result.points_awarded;
+            }
+            
+            // Reset form after delay
+            setTimeout(() => {
+                resetForm();
+            }, 3000);
+        } else {
+            showAlert(result.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred. Please try again.', 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Report';
+    }
+});
+
+function showRecyclingInfo(objectType) {
+    const recyclingInfo = {
+        'plastic bottle': {
+            title: 'Plastic Bottle Recycling',
+            description: 'Plastic bottles can be recycled into new bottles, clothing, and other products.',
+            steps: [
+                'Remove the cap and label',
+                'Rinse the bottle clean',
+                'Check the recycling number (usually 1 or 2)',
+                'Place in recycling bin'
+            ]
+        },
+        'paper': {
+            title: 'Paper Recycling',
+            description: 'Paper can be recycled multiple times into new paper products.',
+            steps: [
+                'Remove any plastic or metal parts',
+                'Keep paper dry and clean',
+                'Sort by type if required',
+                'Place in paper recycling bin'
+            ]
+        },
+        'glass': {
+            title: 'Glass Recycling',
+            description: 'Glass can be recycled indefinitely without losing quality.',
+            steps: [
+                'Remove caps and lids',
+                'Rinse clean',
+                'Sort by color if required',
+                'Place in glass recycling bin'
+            ]
+        },
+        'metal can': {
+            title: 'Metal Can Recycling',
+            description: 'Metal cans are highly recyclable and valuable materials.',
+            steps: [
+                'Empty and rinse the can',
+                'Remove any labels if possible',
+                'Flatten to save space',
+                'Place in metal recycling bin'
+            ]
+        }
+    };
+    
+    const info = recyclingInfo[objectType] || {
+        title: 'General Recycling',
+        description: 'This item can be recycled. Check with your local recycling center for specific instructions.',
+        steps: ['Check local recycling guidelines', 'Clean the item', 'Sort appropriately', 'Place in correct bin']
+    };
+    
+    document.getElementById('recyclingTitle').textContent = info.title;
+    document.getElementById('recyclingDescription').textContent = info.description;
+    
+    const stepsList = document.getElementById('recyclingSteps');
+    stepsList.innerHTML = '<ol>' + info.steps.map(step => `<li>${step}</li>`).join('') + '</ol>';
+    
+    document.getElementById('recyclingInfo').classList.remove('d-none');
+}
+
+function checkFormValidity() {
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = !(uploadedImageUrl && currentLocation);
+}
+
+function resetForm() {
+    // Reset image
+    imagePreview.classList.add('d-none');
+    uploadArea.style.display = 'block';
+    fileInput.value = '';
+    uploadedImageUrl = null;
+    
+    // Reset location
+    document.getElementById('latitude').value = '';
+    document.getElementById('longitude').value = '';
+    currentLocation = null;
+    locationStatus.textContent = '';
+    locationStatus.className = 'ms-2 small text-muted';
+    
+    // Hide results
+    document.getElementById('detectionResults').classList.add('d-none');
+    document.getElementById('recyclingInfo').classList.add('d-none');
+    
+    checkFormValidity();
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+}
+</script>
+{% endblock %}

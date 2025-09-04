@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Home - EcoTracker{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-success text-white py-5">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-recycle me-3"></i>Welcome to EcoTracker
+        </h1>
+        <p class="lead mb-4">Track waste, find recycling centers, and earn points for a cleaner planet!</p>
+        
+        {% if not session.user_id %}
+        <div class="hero-buttons">
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-user-plus me-2"></i>Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+        </div>
+        {% else %}
+        <div class="hero-buttons">
+            <a href="{{ url_for('report') }}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-camera me-2"></i>Report Waste
+            </a>
+            <a href="{{ url_for('quiz') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-gamepad me-2"></i>Take Quiz
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Features Section -->
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-camera fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Report Waste</h5>
+                    <p class="card-text">Upload photos of waste and get AI-powered object detection. Earn points for each report!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Find Centers</h5>
+                    <p class="card-text">Discover nearby recycling centers and waste bins using our interactive map.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-trophy fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Leaderboard</h5>
+                    <p class="card-text">Compete with other users and climb the leaderboard by earning points.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-gamepad fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Eco Quiz</h5>
+                    <p class="card-text">Test your environmental knowledge and earn bonus points with our quiz game.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-mobile-alt fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Mobile Friendly</h5>
+                    <p class="card-text">Fully responsive design that works perfectly on all devices and can be installed as a PWA.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Eco Impact</h5>
+                    <p class="card-text">Track your environmental impact and learn how to recycle different materials properly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    {% if session.user_id %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">Your Eco Impact</h3>
+            <div class="row text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <h4 class="text-success">{{ user.points if user else 0 }}</h4>
+                        <p>Points Earned</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <h4 class="text-success">0</h4>
+                        <p>Reports Submitted</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <h4 class="text-success">0</h4>
+                        <p>Quiz Completed</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <h4 class="text-success">0</h4>
+                        <p>CO2 Saved (kg)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Recycling Centers - EcoTracker{% endblock %}
+
+{% block extra_head %}
+<!-- Google Maps API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+<!-- Note: Replace YOUR_API_KEY with your actual Google Maps API key -->
+<style>
+    #map {
+        height: 500px;
+        width: 100%;
+        border-radius: 10px;
+    }
+    .map-container {
+        position: relative;
+    }
+    .map-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: white;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .legend {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 1000;
+        background: white;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Nearby Recycling Centers
+                    </h3>
+                    <p class="mb-0">Find recycling centers and waste bins near you</p>
+                </div>
+                
+                <div class="card-body">
+                    <div class="map-container">
+                        <div id="map"></div>
+                        
+                        <div class="map-controls">
+                            <button class="btn btn-success btn-sm" onclick="getCurrentLocation()">
+                                <i class="fas fa-location-arrow me-1"></i>My Location
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="toggleMarkers()">
+                                <i class="fas fa-eye me-1"></i>Toggle All
+                            </button>
+                        </div>
+                        
+                        <div class="legend">
+                            <h6>Legend</h6>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #28a745;"></div>
+                                <span>Recycling Centers</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #ffc107;"></div>
+                                <span>Waste Bins</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recycling Centers List -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Recycling Centers
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="centersList" class="row">
+                        <!-- Centers will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let map;
+let markers = [];
+let userMarker = null;
+let userLocation = null;
+
+// Initialize map
+function initMap() {
+    // Default location (New York City)
+    const defaultLocation = { lat: 40.7128, lng: -74.0060 };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: defaultLocation,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+    
+    // Load recycling centers
+    loadRecyclingCenters();
+    
+    // Try to get user's current location
+    getCurrentLocation();
+}
+
+// Load recycling centers from API
+async function loadRecyclingCenters() {
+    try {
+        const response = await fetch('/api/recycling_centers');
+        const centers = await response.json();
+        
+        centers.forEach(center => {
+            addMarker(center);
+        });
+        
+        updateCentersList(centers);
+    } catch (error) {
+        console.error('Error loading recycling centers:', error);
+        showAlert('Error loading recycling centers. Please try again.', 'danger');
+    }
+}
+
+// Add marker to map
+function addMarker(center) {
+    const icon = center.type === 'center' ? {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="15" cy="15" r="12" fill="#28a745" stroke="white" stroke-width="2"/>
+                <text x="15" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">R</text>
+            </svg>
+        `),
+        scaledSize: new google.maps.Size(30, 30)
+    } : {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12.5" cy="12.5" r="10" fill="#ffc107" stroke="white" stroke-width="2"/>
+                <text x="12.5" y="17" text-anchor="middle" fill="white" font-size="10" font-weight="bold">B</text>
+            </svg>
+        `),
+        scaledSize: new google.maps.Size(25, 25)
+    };
+    
+    const marker = new google.maps.Marker({
+        position: { lat: center.lat, lng: center.lng },
+        map: map,
+        title: center.name,
+        icon: icon,
+        visible: true
+    });
+    
+    const infoWindow = new google.maps.InfoWindow({
+        content: `
+            <div class="p-2">
+                <h6 class="mb-1">${center.name}</h6>
+                <p class="mb-1 small text-muted">${center.type === 'center' ? 'Recycling Center' : 'Waste Bin'}</p>
+                <p class="mb-1 small">Lat: ${center.lat.toFixed(4)}, Lng: ${center.lng.toFixed(4)}</p>
+                <button class="btn btn-sm btn-success" onclick="getDirections(${center.lat}, ${center.lng})">
+                    <i class="fas fa-directions me-1"></i>Directions
+                </button>
+            </div>
+        `
+    });
+    
+    marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+    });
+    
+    markers.push(marker);
+}
+
+// Get user's current location
+function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        showAlert('Geolocation is not supported by this browser.', 'danger');
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            
+            // Update map center
+            map.setCenter(userLocation);
+            map.setZoom(15);
+            
+            // Add or update user marker
+            if (userMarker) {
+                userMarker.setPosition(userLocation);
+            } else {
+                userMarker = new google.maps.Marker({
+                    position: userLocation,
+                    map: map,
+                    title: 'Your Location',
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12.5" cy="12.5" r="10" fill="#007bff" stroke="white" stroke-width="2"/>
+                                <text x="12.5" y="17" text-anchor="middle" fill="white" font-size="10" font-weight="bold">U</text>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(25, 25)
+                    }
+                });
+            }
+            
+            // Calculate distances and update list
+            updateDistances();
+        },
+        (error) => {
+            console.error('Error getting location:', error);
+            showAlert('Could not get your location. Using default location.', 'warning');
+        }
+    );
+}
+
+// Update centers list with distances
+function updateDistances() {
+    if (!userLocation) return;
+    
+    const centersList = document.getElementById('centersList');
+    const centers = markers.map(marker => ({
+        name: marker.getTitle(),
+        position: marker.getPosition().toJSON(),
+        type: marker.getIcon().url.includes('#28a745') ? 'center' : 'bin'
+    }));
+    
+    centers.forEach(center => {
+        const distance = calculateDistance(
+            userLocation.lat, userLocation.lng,
+            center.position.lat, center.position.lng
+        );
+        center.distance = distance;
+    });
+    
+    centers.sort((a, b) => a.distance - b.distance);
+    updateCentersList(centers);
+}
+
+// Calculate distance between two points
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// Update centers list display
+function updateCentersList(centers) {
+    const centersList = document.getElementById('centersList');
+    centersList.innerHTML = '';
+    
+    centers.forEach(center => {
+        const centerCard = document.createElement('div');
+        centerCard.className = 'col-md-6 col-lg-4 mb-3';
+        
+        const distanceText = center.distance ? 
+            `<small class="text-muted">${center.distance.toFixed(1)} km away</small>` : '';
+        
+        centerCard.innerHTML = `
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-${center.type === 'center' ? 'recycle' : 'trash'} me-2 text-${center.type === 'center' ? 'success' : 'warning'}"></i>
+                        ${center.name}
+                    </h6>
+                    <p class="card-text small text-muted">
+                        ${center.type === 'center' ? 'Recycling Center' : 'Waste Bin'}
+                    </p>
+                    ${distanceText}
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-success" onclick="centerMapOnLocation(${center.position.lat}, ${center.position.lng})">
+                            <i class="fas fa-map-marker-alt me-1"></i>View on Map
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        centersList.appendChild(centerCard);
+    });
+}
+
+// Center map on specific location
+function centerMapOnLocation(lat, lng) {
+    map.setCenter({ lat: lat, lng: lng });
+    map.setZoom(16);
+}
+
+// Get directions to location
+function getDirections(lat, lng) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
+}
+
+// Toggle all markers visibility
+function toggleMarkers() {
+    const allVisible = markers.every(marker => marker.getVisible());
+    markers.forEach(marker => {
+        marker.setVisible(!allVisible);
+    });
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - EcoTracker{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                        <h2>Admin Access</h2>
+                        <p class="text-muted">Administrator login required</p>
+                    </div>
+                    
+                    <form id="adminLoginForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Admin Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user-shield"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login as Admin
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="small text-muted">Default credentials: admin / admin123</p>
+                        <a href="{{ url_for('index') }}" class="text-success">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        username: formData.get('username'),
+        password: formData.get('password')
+    };
+    
+    try {
+        const response = await fetch('/admin_login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Admin login successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = '/admin';
+            }, 1500);
+        } else {
+            showAlert(result.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred. Please try again.', 'danger');
+    }
+});
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+}
+</script>
+{% endblock %}

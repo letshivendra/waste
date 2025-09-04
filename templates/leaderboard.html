@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - EcoTracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>Eco Champions Leaderboard
+                    </h3>
+                    <p class="mb-0">Top environmental warriors making a difference!</p>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Top 3 Podium -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="podium-container text-center">
+                                {% if users|length >= 3 %}
+                                <!-- 2nd Place -->
+                                <div class="podium-item">
+                                    <div class="podium-place second">
+                                        <i class="fas fa-medal fa-2x text-secondary"></i>
+                                        <h4>2nd</h4>
+                                    </div>
+                                    <div class="podium-user">
+                                        <div class="user-avatar">
+                                            <i class="fas fa-user-circle fa-3x text-secondary"></i>
+                                        </div>
+                                        <h5>{{ users[1].username }}</h5>
+                                        <p class="points">{{ users[1].points }} points</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 1st Place -->
+                                <div class="podium-item">
+                                    <div class="podium-place first">
+                                        <i class="fas fa-crown fa-2x text-warning"></i>
+                                        <h4>1st</h4>
+                                    </div>
+                                    <div class="podium-user">
+                                        <div class="user-avatar">
+                                            <i class="fas fa-user-circle fa-3x text-warning"></i>
+                                        </div>
+                                        <h5>{{ users[0].username }}</h5>
+                                        <p class="points">{{ users[0].points }} points</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 3rd Place -->
+                                <div class="podium-item">
+                                    <div class="podium-place third">
+                                        <i class="fas fa-medal fa-2x text-warning"></i>
+                                        <h4>3rd</h4>
+                                    </div>
+                                    <div class="podium-user">
+                                        <div class="user-avatar">
+                                            <i class="fas fa-user-circle fa-3x text-warning"></i>
+                                        </div>
+                                        <h5>{{ users[2].username }}</h5>
+                                        <p class="points">{{ users[2].points }} points</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Full Leaderboard -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>User</th>
+                                    <th>Points</th>
+                                    <th>Badges</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr class="{% if loop.index <= 3 %}table-warning{% endif %}">
+                                    <td>
+                                        <div class="rank-container">
+                                            {% if loop.index == 1 %}
+                                                <i class="fas fa-crown text-warning"></i>
+                                            {% elif loop.index == 2 %}
+                                                <i class="fas fa-medal text-secondary"></i>
+                                            {% elif loop.index == 3 %}
+                                                <i class="fas fa-medal text-warning"></i>
+                                            {% else %}
+                                                <span class="rank-number">{{ loop.index }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="user-info">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            <strong>{{ user.username }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success fs-6">
+                                            <i class="fas fa-coins me-1"></i>{{ user.points }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="badges">
+                                            {% if user.points >= 100 %}
+                                                <span class="badge bg-primary me-1" title="Eco Warrior">🌱</span>
+                                            {% endif %}
+                                            {% if user.points >= 250 %}
+                                                <span class="badge bg-info me-1" title="Green Champion">🏆</span>
+                                            {% endif %}
+                                            {% if user.points >= 500 %}
+                                                <span class="badge bg-warning me-1" title="Eco Master">👑</span>
+                                            {% endif %}
+                                            {% if user.points >= 1000 %}
+                                                <span class="badge bg-danger me-1" title="Planet Savior">🌍</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-success" onclick="viewUserProfile('{{ user.username }}')">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% if users|length == 0 %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-trophy fa-3x mb-3"></i>
+                                        <p>No users yet. Be the first to join the leaderboard!</p>
+                                        <a href="{{ url_for('register') }}" class="btn btn-success">
+                                            <i class="fas fa-user-plus me-2"></i>Join Now
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievement System -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Achievement System
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="achievement-card text-center">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-seedling fa-2x text-success"></i>
+                                </div>
+                                <h6>Eco Warrior</h6>
+                                <p class="small text-muted">Earn 100 points</p>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="achievement-card text-center">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-trophy fa-2x text-info"></i>
+                                </div>
+                                <h6>Green Champion</h6>
+                                <p class="small text-muted">Earn 250 points</p>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="achievement-card text-center">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-crown fa-2x text-warning"></i>
+                                </div>
+                                <h6>Eco Master</h6>
+                                <p class="small text-muted">Earn 500 points</p>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="achievement-card text-center">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-globe fa-2x text-danger"></i>
+                                </div>
+                                <h6>Planet Savior</h6>
+                                <p class="small text-muted">Earn 1000 points</p>
+                                <div class="progress">
+                                    <div class="progress-bar bg-danger" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How to Earn Points -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>How to Earn Points
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="point-activity">
+                                <i class="fas fa-camera fa-2x text-success mb-2"></i>
+                                <h6>Report Waste</h6>
+                                <p class="small text-muted">Upload photos of waste</p>
+                                <span class="badge bg-success">+10 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="point-activity">
+                                <i class="fas fa-gamepad fa-2x text-info mb-2"></i>
+                                <h6>Take Quiz</h6>
+                                <p class="small text-muted">Test your eco knowledge</p>
+                                <span class="badge bg-info">+2 per correct</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="point-activity">
+                                <i class="fas fa-share fa-2x text-warning mb-2"></i>
+                                <h6>Share & Refer</h6>
+                                <p class="small text-muted">Invite friends to join</p>
+                                <span class="badge bg-warning">+25 points</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto-refresh leaderboard every 30 seconds
+setInterval(() => {
+    location.reload();
+}, 30000);
+
+function viewUserProfile(username) {
+    // In a real app, this would show a detailed user profile
+    alert(`Viewing profile for ${username}. This feature will be implemented in future updates!`);
+}
+
+// Update achievement progress (placeholder - in real app, this would use actual user data)
+document.addEventListener('DOMContentLoaded', function() {
+    // This would be populated with actual user progress
+    const achievements = [
+        { selector: '.achievement-card:nth-child(1) .progress-bar', progress: 0 },
+        { selector: '.achievement-card:nth-child(2) .progress-bar', progress: 0 },
+        { selector: '.achievement-card:nth-child(3) .progress-bar', progress: 0 },
+        { selector: '.achievement-card:nth-child(4) .progress-bar', progress: 0 }
+    ];
+    
+    achievements.forEach(achievement => {
+        const progressBar = document.querySelector(achievement.selector);
+        if (progressBar) {
+            progressBar.style.width = achievement.progress + '%';
+        }
+    });
+});
+</script>
+{% endblock %}

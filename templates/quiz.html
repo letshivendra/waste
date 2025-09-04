@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Eco Quiz - EcoTracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-gamepad me-2"></i>Eco Knowledge Quiz
+                    </h3>
+                    <p class="mb-0">Test your environmental knowledge and earn points!</p>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Quiz Instructions -->
+                    <div id="quizInstructions" class="text-center mb-4">
+                        <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                        <h4>Ready to Test Your Eco Knowledge?</h4>
+                        <p class="text-muted">Answer 10 questions about recycling, sustainability, and environmental protection.</p>
+                        <p class="text-muted">Earn 2 points for each correct answer!</p>
+                        <button class="btn btn-success btn-lg" onclick="startQuiz()">
+                            <i class="fas fa-play me-2"></i>Start Quiz
+                        </button>
+                    </div>
+                    
+                    <!-- Quiz Progress -->
+                    <div id="quizProgress" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Question <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span></span>
+                            <span class="badge bg-success">Score: <span id="currentScore">0</span></span>
+                        </div>
+                        <div class="progress mb-4">
+                            <div class="progress-bar bg-success" id="progressBar" style="width: 10%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz Question -->
+                    <div id="quizQuestion" class="d-none">
+                        <div class="question-card">
+                            <h4 id="questionText" class="mb-4"></h4>
+                            <div id="questionOptions" class="options-container">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button class="btn btn-success" id="nextQuestion" onclick="nextQuestion()" disabled>
+                                Next Question <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz Results -->
+                    <div id="quizResults" class="d-none text-center">
+                        <div class="results-card">
+                            <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
+                            <h3>Quiz Complete!</h3>
+                            <div class="score-display mb-4">
+                                <h2 class="text-success" id="finalScore">0</h2>
+                                <p class="text-muted">out of 10 questions</p>
+                                <p class="text-success">You earned <span id="pointsEarned">0</span> points!</p>
+                            </div>
+                            
+                            <div class="performance-message mb-4">
+                                <div id="performanceText"></div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-success me-2" onclick="retakeQuiz()">
+                                    <i class="fas fa-redo me-2"></i>Retake Quiz
+                                </button>
+                                <a href="{{ url_for('leaderboard') }}" class="btn btn-outline-success">
+                                    <i class="fas fa-trophy me-2"></i>View Leaderboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Quiz data
+const quizQuestions = [
+    {
+        question: "Which of the following materials takes the longest to decompose in a landfill?",
+        options: ["Paper", "Plastic bottle", "Aluminum can", "Glass bottle"],
+        correct: 3,
+        explanation: "Glass bottles can take up to 1 million years to decompose in a landfill."
+    },
+    {
+        question: "What percentage of a plastic bottle can be recycled into a new bottle?",
+        options: ["25%", "50%", "75%", "100%"],
+        correct: 3,
+        explanation: "Plastic bottles can be 100% recycled into new bottles or other products."
+    },
+    {
+        question: "Which of these items should NOT be put in a recycling bin?",
+        options: ["Clean aluminum cans", "Pizza boxes with grease", "Glass bottles", "Cardboard boxes"],
+        correct: 1,
+        explanation: "Greasy pizza boxes contaminate the recycling process and should be composted instead."
+    },
+    {
+        question: "How many times can aluminum be recycled?",
+        options: ["Once", "5-10 times", "50-100 times", "Unlimited times"],
+        correct: 3,
+        explanation: "Aluminum can be recycled unlimited times without losing quality."
+    },
+    {
+        question: "What is the most energy-efficient way to dispose of organic waste?",
+        options: ["Landfill", "Incineration", "Composting", "Recycling"],
+        correct: 2,
+        explanation: "Composting organic waste creates nutrient-rich soil and reduces methane emissions."
+    },
+    {
+        question: "Which type of plastic is most commonly recycled?",
+        options: ["PET (1)", "HDPE (2)", "PVC (3)", "LDPE (4)"],
+        correct: 0,
+        explanation: "PET (Polyethylene Terephthalate) is the most commonly recycled plastic, used in water bottles."
+    },
+    {
+        question: "What happens to most electronic waste (e-waste)?",
+        options: ["It's all recycled", "It's properly disposed of", "It ends up in landfills", "It's incinerated"],
+        correct: 2,
+        explanation: "Unfortunately, most e-waste still ends up in landfills, which is why proper e-waste recycling is important."
+    },
+    {
+        question: "How much energy is saved by recycling one aluminum can?",
+        options: ["Enough to power a TV for 1 hour", "Enough to power a TV for 3 hours", "Enough to power a TV for 6 hours", "Enough to power a TV for 12 hours"],
+        correct: 1,
+        explanation: "Recycling one aluminum can saves enough energy to power a TV for 3 hours."
+    },
+    {
+        question: "What is the '3 R's' of waste management?",
+        options: ["Reduce, Reuse, Recycle", "Read, Write, Recycle", "Reduce, Repair, Replace", "Reuse, Repair, Replace"],
+        correct: 0,
+        explanation: "The 3 R's are Reduce (use less), Reuse (use again), and Recycle (make new products)."
+    },
+    {
+        question: "Which of these is the most sustainable packaging option?",
+        options: ["Plastic bag", "Paper bag", "Reusable cloth bag", "Biodegradable plastic"],
+        correct: 2,
+        explanation: "Reusable cloth bags are the most sustainable as they can be used hundreds of times."
+    }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let selectedAnswer = null;
+let quizStarted = false;
+
+function startQuiz() {
+    quizStarted = true;
+    currentQuestionIndex = 0;
+    score = 0;
+    
+    document.getElementById('quizInstructions').classList.add('d-none');
+    document.getElementById('quizProgress').classList.remove('d-none');
+    document.getElementById('quizQuestion').classList.remove('d-none');
+    
+    showQuestion();
+}
+
+function showQuestion() {
+    const question = quizQuestions[currentQuestionIndex];
+    
+    document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+    document.getElementById('totalQuestions').textContent = quizQuestions.length;
+    document.getElementById('currentScore').textContent = score;
+    
+    const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    
+    document.getElementById('questionText').textContent = question.question;
+    
+    const optionsContainer = document.getElementById('questionOptions');
+    optionsContainer.innerHTML = '';
+    
+    question.options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.className = 'option-item';
+        optionElement.innerHTML = `
+            <input type="radio" name="answer" value="${index}" id="option${index}" onchange="selectAnswer(${index})">
+            <label for="option${index}" class="option-label">
+                <span class="option-letter">${String.fromCharCode(65 + index)}</span>
+                <span class="option-text">${option}</span>
+            </label>
+        `;
+        optionsContainer.appendChild(optionElement);
+    });
+    
+    document.getElementById('nextQuestion').disabled = true;
+    selectedAnswer = null;
+}
+
+function selectAnswer(answerIndex) {
+    selectedAnswer = answerIndex;
+    document.getElementById('nextQuestion').disabled = false;
+    
+    // Add visual feedback
+    const options = document.querySelectorAll('.option-item');
+    options.forEach((option, index) => {
+        option.classList.remove('selected', 'correct', 'incorrect');
+        if (index === answerIndex) {
+            option.classList.add('selected');
+        }
+    });
+}
+
+function nextQuestion() {
+    if (selectedAnswer === null) return;
+    
+    const question = quizQuestions[currentQuestionIndex];
+    const isCorrect = selectedAnswer === question.correct;
+    
+    if (isCorrect) {
+        score++;
+    }
+    
+    // Show correct answer
+    const options = document.querySelectorAll('.option-item');
+    options.forEach((option, index) => {
+        option.classList.remove('selected');
+        if (index === question.correct) {
+            option.classList.add('correct');
+        } else if (index === selectedAnswer && !isCorrect) {
+            option.classList.add('incorrect');
+        }
+    });
+    
+    // Show explanation
+    const explanation = document.createElement('div');
+    explanation.className = 'alert alert-info mt-3';
+    explanation.innerHTML = `<strong>Explanation:</strong> ${question.explanation}`;
+    document.getElementById('questionOptions').appendChild(explanation);
+    
+    // Disable next button and show continue
+    document.getElementById('nextQuestion').disabled = true;
+    document.getElementById('nextQuestion').innerHTML = 'Continue <i class="fas fa-arrow-right ms-2"></i>';
+    document.getElementById('nextQuestion').onclick = continueQuiz;
+}
+
+function continueQuiz() {
+    currentQuestionIndex++;
+    
+    if (currentQuestionIndex < quizQuestions.length) {
+        showQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    document.getElementById('quizProgress').classList.add('d-none');
+    document.getElementById('quizQuestion').classList.add('d-none');
+    document.getElementById('quizResults').classList.remove('d-none');
+    
+    const percentage = (score / quizQuestions.length) * 100;
+    const pointsEarned = score * 2;
+    
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('pointsEarned').textContent = pointsEarned;
+    
+    let performanceText = '';
+    if (percentage >= 90) {
+        performanceText = '<div class="alert alert-success"><i class="fas fa-star me-2"></i>Excellent! You\'re an eco-expert!</div>';
+    } else if (percentage >= 70) {
+        performanceText = '<div class="alert alert-info"><i class="fas fa-thumbs-up me-2"></i>Great job! You have good eco knowledge!</div>';
+    } else if (percentage >= 50) {
+        performanceText = '<div class="alert alert-warning"><i class="fas fa-lightbulb me-2"></i>Good effort! Keep learning about sustainability!</div>';
+    } else {
+        performanceText = '<div class="alert alert-danger"><i class="fas fa-book me-2"></i>Keep studying! Every eco-warrior starts somewhere!</div>';
+    }
+    
+    document.getElementById('performanceText').innerHTML = performanceText;
+    
+    // Submit score to server
+    submitScore(pointsEarned);
+}
+
+function submitScore(points) {
+    fetch('/submit_quiz', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ score: points })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update user points in navbar
+            const userPoints = document.getElementById('user-points');
+            if (userPoints) {
+                const currentPoints = parseInt(userPoints.textContent);
+                userPoints.textContent = currentPoints + data.points_awarded;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting score:', error);
+    });
+}
+
+function retakeQuiz() {
+    document.getElementById('quizResults').classList.add('d-none');
+    document.getElementById('quizInstructions').classList.remove('d-none');
+    
+    // Reset quiz state
+    currentQuestionIndex = 0;
+    score = 0;
+    selectedAnswer = null;
+    quizStarted = false;
+}
+</script>
+{% endblock %}

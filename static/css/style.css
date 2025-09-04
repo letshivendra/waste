@@ -1,0 +1,503 @@
+/* Custom CSS for EcoTracker */
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+}
+
+.hero-buttons .btn {
+    margin: 0.5rem;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.hero-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Feature Cards */
+.feature-card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.feature-card .card-body {
+    padding: 2rem;
+}
+
+.feature-card i {
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover i {
+    transform: scale(1.1);
+}
+
+/* Stats Cards */
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.stat-card h4 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.upload-area:hover {
+    border-color: #28a745;
+    background-color: #e8f5e8;
+}
+
+.upload-area.drag-over {
+    border-color: #28a745;
+    background-color: #e8f5e8;
+}
+
+.upload-content i {
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover .upload-content i {
+    color: #28a745;
+    transform: scale(1.1);
+}
+
+/* Image Preview */
+#imagePreview img {
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Map Styles */
+.map-container {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.map-controls .btn {
+    margin: 0.25rem;
+    border-radius: 20px;
+}
+
+.legend {
+    font-size: 0.9rem;
+}
+
+.legend-item {
+    font-size: 0.8rem;
+}
+
+/* Leaderboard Styles */
+.podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.podium-item {
+    text-align: center;
+}
+
+.podium-place {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 1rem;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.podium-place.first {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+    min-height: 100px;
+}
+
+.podium-place.second {
+    background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+    min-height: 80px;
+}
+
+.podium-place.third {
+    background: linear-gradient(135deg, #cd7f32 0%, #8b4513 100%);
+    min-height: 60px;
+}
+
+.podium-user {
+    background: white;
+    padding: 1rem;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.user-avatar i {
+    color: #6c757d;
+}
+
+.points {
+    font-weight: bold;
+    color: #28a745;
+    font-size: 1.1rem;
+}
+
+.rank-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rank-number {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.badges .badge {
+    font-size: 1rem;
+    padding: 0.5rem;
+}
+
+/* Achievement Cards */
+.achievement-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.achievement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.achievement-icon {
+    margin-bottom: 1rem;
+}
+
+/* Point Activities */
+.point-activity {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.point-activity:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* Quiz Styles */
+.question-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.options-container {
+    display: grid;
+    gap: 1rem;
+}
+
+.option-item {
+    position: relative;
+}
+
+.option-item input[type="radio"] {
+    display: none;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option-label:hover {
+    background: #e9ecef;
+    border-color: #28a745;
+}
+
+.option-item.selected .option-label {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.option-item.correct .option-label {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.option-item.incorrect .option-label {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.option-letter {
+    background: #6c757d;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+    transition: all 0.3s ease;
+}
+
+.option-item.selected .option-letter,
+.option-item.correct .option-letter {
+    background: #28a745;
+}
+
+.option-item.incorrect .option-letter {
+    background: #dc3545;
+}
+
+.option-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+/* Results Card */
+.results-card {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.score-display h2 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.performance-message {
+    margin: 2rem 0;
+}
+
+.action-buttons .btn {
+    margin: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+/* Admin Dashboard */
+.analytics-item {
+    margin-bottom: 1.5rem;
+}
+
+.analytics-item h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 300px;
+        text-align: center;
+    }
+    
+    .hero-buttons .btn {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .podium-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .podium-item {
+        width: 200px;
+    }
+    
+    .feature-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .question-card {
+        padding: 1.5rem;
+    }
+    
+    .results-card {
+        padding: 2rem 1rem;
+    }
+    
+    .map-controls {
+        position: static;
+        margin-bottom: 1rem;
+    }
+    
+    .legend {
+        position: static;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-section .lead {
+        font-size: 1rem;
+    }
+    
+    .stat-card h4 {
+        font-size: 1.5rem;
+    }
+    
+    .upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .option-label {
+        padding: 0.75rem 1rem;
+    }
+    
+    .option-letter {
+        width: 25px;
+        height: 25px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #28a745;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #218838;
+}

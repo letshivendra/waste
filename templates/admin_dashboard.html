@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - EcoTracker{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Admin Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                            </h3>
+                            <p class="mb-0">Manage users, rewards, and system settings</p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-light">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users|length }}</h4>
+                            <p class="mb-0">Total Users</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users|sum(attribute='points') if users else 0 }}</h4>
+                            <p class="mb-0">Total Points</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-coins fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users|selectattr('points', '>=', 100)|list|length if users else 0 }}</h4>
+                            <p class="mb-0">Active Users</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ users[0].points if users else 0 }}</h4>
+                            <p class="mb-0">Top Score</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-trophy fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>User Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Points</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{% if loop.index == 1 %}warning{% elif loop.index <= 3 %}info{% else %}secondary{% endif %}">
+                                            #{{ loop.index }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            <strong>{{ user.username }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge bg-success fs-6">
+                                            <i class="fas fa-coins me-1"></i>{{ user.points }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if user.points >= 500 %}
+                                            <span class="badge bg-danger">Eco Master</span>
+                                        {% elif user.points >= 250 %}
+                                            <span class="badge bg-warning">Green Champion</span>
+                                        {% elif user.points >= 100 %}
+                                            <span class="badge bg-info">Eco Warrior</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Beginner</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewUserDetails('{{ user.username }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="awardPoints('{{ user.username }}')">
+                                                <i class="fas fa-gift"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning" onclick="sendMessage('{{ user.username }}')">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% if users|length == 0 %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-users fa-3x mb-3"></i>
+                                        <p>No users found.</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rewards Management -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gift me-2"></i>Rewards Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="rewardForm">
+                        <div class="mb-3">
+                            <label for="rewardUser" class="form-label">Select User</label>
+                            <select class="form-select" id="rewardUser" required>
+                                <option value="">Choose a user...</option>
+                                {% for user in users %}
+                                <option value="{{ user.username }}">{{ user.username }} ({{ user.points }} points)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="rewardType" class="form-label">Reward Type</label>
+                            <select class="form-select" id="rewardType" required>
+                                <option value="">Select reward...</option>
+                                <option value="points">Bonus Points</option>
+                                <option value="badge">Special Badge</option>
+                                <option value="certificate">Eco Certificate</option>
+                                <option value="prize">Physical Prize</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="pointsInput" style="display: none;">
+                            <label for="pointsAmount" class="form-label">Points Amount</label>
+                            <input type="number" class="form-control" id="pointsAmount" min="1" max="1000">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="rewardMessage" class="form-label">Message</label>
+                            <textarea class="form-control" id="rewardMessage" rows="3" placeholder="Congratulations message..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-gift me-2"></i>Award Reward
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>System Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="analytics-item mb-3">
+                        <h6>User Engagement</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                        </div>
+                        <small class="text-muted">75% of users are active</small>
+                    </div>
+                    
+                    <div class="analytics-item mb-3">
+                        <h6>Report Accuracy</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: 85%"></div>
+                        </div>
+                        <small class="text-muted">85% accurate waste detection</small>
+                    </div>
+                    
+                    <div class="analytics-item mb-3">
+                        <h6>Quiz Completion</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 60%"></div>
+                        </div>
+                        <small class="text-muted">60% quiz completion rate</small>
+                    </div>
+                    
+                    <div class="analytics-item">
+                        <h6>Recycling Impact</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" style="width: 90%"></div>
+                        </div>
+                        <small class="text-muted">90% positive environmental impact</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Show/hide points input based on reward type
+document.getElementById('rewardType').addEventListener('change', function() {
+    const pointsInput = document.getElementById('pointsInput');
+    if (this.value === 'points') {
+        pointsInput.style.display = 'block';
+    } else {
+        pointsInput.style.display = 'none';
+    }
+});
+
+// Reward form submission
+document.getElementById('rewardForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const user = document.getElementById('rewardUser').value;
+    const type = document.getElementById('rewardType').value;
+    const points = document.getElementById('pointsAmount').value;
+    const message = document.getElementById('rewardMessage').value;
+    
+    if (!user || !type) {
+        showAlert('Please fill in all required fields.', 'danger');
+        return;
+    }
+    
+    if (type === 'points' && (!points || points < 1)) {
+        showAlert('Please enter a valid points amount.', 'danger');
+        return;
+    }
+    
+    // Simulate reward awarding
+    showAlert(`Reward awarded to ${user}!`, 'success');
+    
+    // Reset form
+    this.reset();
+    document.getElementById('pointsInput').style.display = 'none';
+});
+
+// User action functions
+function viewUserDetails(username) {
+    alert(`Viewing detailed profile for ${username}. This feature will show user activity, reports, and achievements.`);
+}
+
+function awardPoints(username) {
+    const points = prompt(`Enter points to award to ${username}:`);
+    if (points && !isNaN(points) && points > 0) {
+        showAlert(`${points} points awarded to ${username}!`, 'success');
+    }
+}
+
+function sendMessage(username) {
+    const message = prompt(`Enter message to send to ${username}:`);
+    if (message) {
+        showAlert(`Message sent to ${username}!`, 'success');
+    }
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+}
+</script>
+{% endblock %}
