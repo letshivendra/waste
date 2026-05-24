@@ -25,7 +25,7 @@ A comprehensive full-stack web application for waste tracking, recycling center 
 - **Leaderboard System** with real-time updates
 - **Achievement Badges** and progress tracking
 - **Interactive Quiz** with environmental knowledge
-- **Points Rewards** for various activities
+- **Points Rewards** for various activitiess
 
 ### 🎮 Admin Panel
 - **User Management** dashboard
