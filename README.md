@@ -6,7 +6,7 @@ A comprehensive full-stack web application for waste tracking, recycling center 
 
 ### 👤 User Management
 - **User Registration & Login** with secure session management
-- **MongoDB Integration** for user data storage
+- **MongoDB Integration** for user data storages
 - **Points System** for gamification
 
 ### 📸 Waste Reporting
